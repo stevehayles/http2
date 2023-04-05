@@ -101,6 +101,9 @@ class IncomingWindowHandler {
   /// The stream id this window handler is for (is `0` for connection level).
   final int _streamId;
 
+  // The cumulative count of the size of the processed data.  
+  int _processedDataSize = 0;
+  
   IncomingWindowHandler.stream(
       this._frameWriter, this._localWindow, this._streamId);
 
@@ -152,11 +155,15 @@ class IncomingWindowHandler {
   //  - either stop sending window update frames
   //  - or decreasing the window size
   void dataProcessed(int numberOfBytes) {
-    _localWindow.modify(numberOfBytes);
+    _processedDataSize += numberOfBytes;
 
-    // TODO: This can be optimized by delaying the window update to
-    // send one update with a bigger difference than multiple small update
-    // frames.
-    _frameWriter.writeWindowUpdate(numberOfBytes, streamId: _streamId);
+    // check of the cumulative size of the processed data is larger than a percentage
+    // of the current window size.  The original implementation was sending WINDOW_UPDATE frames
+    // on every single receive.  Using a quarter is an arbitry choice TODO test different values
+    if (_processedDataSize > localWindowSize ~/ 4) {
+      _localWindow.modify(_processedDataSize);
+      _frameWriter.writeWindowUpdate(_processedDataSize, streamId: _streamId);
+      _processedDataSize = 0;
+    }
   }
 }
