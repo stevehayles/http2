@@ -1,3 +1,6 @@
+> [!IMPORTANT]  
+> This repo has moved to https://github.com/dart-lang/http/tree/master/pkgs/http2
+
 [![Dart CI](https://github.com/dart-lang/http2/actions/workflows/test-package.yml/badge.svg)](https://github.com/dart-lang/http2/actions/workflows/test-package.yml)
 [![pub package](https://img.shields.io/pub/v/http2.svg)](https://pub.dev/packages/http2)
 [![package publisher](https://img.shields.io/pub/publisher/http2.svg)](https://pub.dev/packages/http2/publisher)
@@ -15,10 +18,10 @@ import 'dart:io';
 
 import 'package:http2/http2.dart';
 
-main() async {
-  var uri = Uri.parse('https://www.google.com/');
+Future<void> main() async {
+  final uri = Uri.parse('https://www.google.com/');
 
-  var transport = new ClientTransportConnection.viaSocket(
+  final transport = ClientTransportConnection.viaSocket(
     await SecureSocket.connect(
       uri.host,
       uri.port,
@@ -26,12 +29,12 @@ main() async {
     ),
   );
 
-  var stream = transport.makeRequest(
+  final stream = transport.makeRequest(
     [
-      new Header.ascii(':method', 'GET'),
-      new Header.ascii(':path', uri.path),
-      new Header.ascii(':scheme', uri.scheme),
-      new Header.ascii(':authority', uri.host),
+      Header.ascii(':method', 'GET'),
+      Header.ascii(':path', uri.path),
+      Header.ascii(':scheme', uri.scheme),
+      Header.ascii(':authority', uri.host),
     ],
     endStream: true,
   );
@@ -39,8 +42,8 @@ main() async {
   await for (var message in stream.incomingMessages) {
     if (message is HeadersStreamMessage) {
       for (var header in message.headers) {
-        var name = utf8.decode(header.name);
-        var value = utf8.decode(header.value);
+        final name = utf8.decode(header.name);
+        final value = utf8.decode(header.value);
         print('Header: $name: $value');
       }
     } else if (message is DataStreamMessage) {
